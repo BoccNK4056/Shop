@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Учёт товаров</title>
+    <style>
+        :root {
+            --primary: #ec4899;
+            --primary-light: #fce7f3;
+            --bg: #fdf2f8;
+            --text: #374151;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --success: #059669;
+            --success-bg: #d1fae5;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            margin-top: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);            margin: 0 0 18px 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 14px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #9ca3af;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            touch-action: manipulation;
+        }
+
+        button.action-btn:active {
+            background-color: #db2777;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-card {
+            background: var(--primary-light);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+
+        .item-price {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .qty-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+
+        .qty-btn:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .qty-btn.success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+        .qty-btn.success:active {
+            background: var(--success);
+            color: white;
+        }
+
+        .qty-btn.danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .qty-btn.danger:active {
+            background: var(--danger);
+            color: white;
+        }
+
+        .qty-display {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .delete-btn {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .delete-btn:active {
+            background: var(--danger);
+            color: white;
+        }
+
+        .total-block {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--success-bg);
+            border-radius: 12px;
+            text-align: right;            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .finish-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            box-shadow: 0 4px 8px rgba(5, 150, 105, 0.25);
+            touch-action: manipulation;
+        }
+
+        .finish-btn:active {
+            transform: scale(0.98);
+            background-color: #047857;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 24px 10px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 360px) {
+            .tab-btn {
+                font-size: 0.9rem;
+                padding: 12px 0;
+            }
+            .item-card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Учёт товаров</h1>
+        
+        <div class="tabs">            <button class="tab-btn active" onclick="switchTab('goods', this)">Товары</button>
+            <button class="tab-btn" onclick="switchTab('order', this)">Заказ</button>
+            <button class="tab-btn" onclick="switchTab('debt', this)">Долг</button>
+        </div>
+
+        <div id="goods" class="tab-content active">
+            <div class="input-group">
+                <input type="text" id="newItemName" placeholder="Название товара" inputmode="text">
+                <input type="number" id="newItemPrice" placeholder="Цена (руб)" inputmode="decimal">
+                <button class="action-btn" onclick="addItem()">Добавить</button>
+            </div>
+            <ul class="item-list" id="goodsList"></ul>
+        </div>
+
+        <div id="order" class="tab-content">
+            <ul class="item-list" id="orderList"></ul>
+            <div class="total-block" id="orderTotal">Итого: 0 руб</div>
+            <button class="finish-btn" onclick="finishOrder()">Завершить заказ</button>
+        </div>
+
+        <div id="debt" class="tab-content">
+            <ul class="item-list" id="debtList"></ul>
+        </div>
+    </div>
+
+    <script>
+        let goods = JSON.parse(localStorage.getItem('shop_goods_v1')) || [];
+        let orders = JSON.parse(localStorage.getItem('shop_orders_v1')) || {};
+        let debts = JSON.parse(localStorage.getItem('shop_debts_v1')) || {};
+
+        function saveData() {
+            localStorage.setItem('shop_goods_v1', JSON.stringify(goods));
+            localStorage.setItem('shop_orders_v1', JSON.stringify(orders));
+            localStorage.setItem('shop_debts_v1', JSON.stringify(debts));
+        }
+
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            btn.classList.add('active');
+            renderAll();
+        }
+
+        function addItem() {
+            const nameInput = document.getElementById('newItemName');
+            const priceInput = document.getElementById('newItemPrice');
+            const name = nameInput.value.trim();
+            const price = parseFloat(priceInput.value);
+            if (!name || isNaN(price) || price <= 0) {
+                alert('Пожалуйста, введи корректное название и цену.');
+                return;
+            }
+
+            const id = Date.now();
+            goods.push({ id, name, price });
+            orders[id] = 0;
+            debts[id] = 0;
+            
+            nameInput.value = '';
+            priceInput.value = '';
+            nameInput.focus();
+            
+            saveData();
+            renderAll();
+        }
+
+        function deleteItem(id) {
+            if (confirm('Удалить этот товар из списка?')) {
+                goods = goods.filter(i => i.id !== id);
+                delete orders[id];
+                delete debts[id];
+                saveData();
+                renderAll();
+            }
+        }
+
+        function changeOrderQty(id, delta) {
+            if (!orders[id]) orders[id] = 0;
+            orders[id] = Math.max(0, orders[id] + delta);
+            saveData();
+            renderOrder();
+        }
+
+        function changeDebtQty(id, delta) {
+            if (!debts[id]) debts[id] = 0;
+            debts[id] = Math.max(0, debts[id] + delta);
+            saveData();
+            renderDebt();
+        }
+
+        function finishOrder() {
+            let total = 0;
+            let hasItems = false;
+            
+            goods.forEach(item => {
+                const qty = orders[item.id] || 0;
+                if (qty > 0) {
+                    total += qty * item.price;                    debts[item.id] = (debts[item.id] || 0) + qty;
+                    hasItems = true;
+                }
+                orders[item.id] = 0;
+            });
+
+            if (hasItems) {
+                saveData();
+                renderOrder();
+                alert('Заказ на сумму ' + total + ' руб. оформлен. Количество перенесено во вкладку Долг.');
+                const debtBtn = document.querySelectorAll('.tab-btn')[2];
+                switchTab('debt', debtBtn);
+            } else {
+                alert('В заказе пока нет товаров. Укажи нужное количество.');
+            }
+        }
+
+        function renderGoods() {
+            const list = document.getElementById('goodsList');
+            list.innerHTML = '';
+            if (goods.length === 0) {
+                list.innerHTML = '<div class="empty-state">Список товаров пуст. Добавь первый!</div>';
+                return;
+            }
+            goods.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'item-card';
+                li.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${item.price} руб</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem(${item.id})">×</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function renderOrder() {
+            const list = document.getElementById('orderList');
+            list.innerHTML = '';
+            let total = 0;
+
+            if (goods.length === 0) {
+                list.innerHTML = '<div class="empty-state">Сначала добавь товары во вкладке Товары</div>';
+                document.getElementById('orderTotal').textContent = 'Итого: 0 руб';
+                return;
+            }
+
+            goods.forEach(item => {                const qty = orders[item.id] || 0;
+                total += qty * item.price;
+
+                const li = document.createElement('li');
+                li.className = 'item-card';
+                li.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${item.price} руб/шт</div>
+                    </div>
+                    <div class="controls">
+                        <button class="qty-btn" onclick="changeOrderQty(${item.id}, -1)">−</button>
+                        <span class="qty-display">${qty}</span>
+                        <button class="qty-btn" onclick="changeOrderQty(${item.id}, 1)">+</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            document.getElementById('orderTotal').textContent = 'Итого: ' + total + ' руб';
+        }
+
+        function renderDebt() {
+            const list = document.getElementById('debtList');
+            list.innerHTML = '';
+            
+            if (goods.length === 0) {
+                list.innerHTML = '<div class="empty-state">Здесь будут отображаться долги по товарам</div>';
+                return;
+            }
+
+            let hasDebt = false;
+            goods.forEach(item => {
+                const qty = debts[item.id] || 0;
+                if (qty > 0) hasDebt = true;
+
+                const li = document.createElement('li');
+                li.className = 'item-card';
+                li.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">Долг: <strong style="color: var(--danger);">${qty} шт.</strong></div>
+                    </div>
+                    <div class="controls">
+                        <button class="qty-btn danger" onclick="changeDebtQty(${item.id}, 1)" title="Увеличить долг">+</button>
+                        <button class="qty-btn success" onclick="changeDebtQty(${item.id}, -1)" title="Отдать 1 шт.">✓</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+            if (!hasDebt) {
+                list.innerHTML = '<div class="empty-state">Долгов нет. Всё отдано!</div>';
+            }
+        }
+
+        function renderAll() {
+            renderGoods();
+            renderOrder();
+            renderDebt();
+        }
+
+        renderAll();
+    </script>
+</body>
+</html>
